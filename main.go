@@ -10,13 +10,13 @@ import (
 
 var upgrader = websocket.Upgrader{}
 
-// Client structure to store ID and connection information
+// Client structure to store ID and connection information (represent each client connection)
 type Client struct {
 	ID   int
 	Conn *websocket.Conn
 }
 
-var clients []Client
+var clients []*Client
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "index.html")
@@ -34,12 +34,22 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	clientID := len(clients) + 1
 
 	// Add the new client to the list of clients
-	client := Client{ID: clientID, Conn: conn}
+	client := &Client{ID: clientID, Conn: conn}
 	clients = append(clients, client)
 
 	// Send a welcome message to the client with their ID
 	welcomeMsg := fmt.Sprintf("Welcome, client #%d!", clientID)
 	conn.WriteMessage(websocket.TextMessage, []byte(welcomeMsg))
+
+	// Remove the client's connection from the clients slice when they disconnect
+	defer func() {
+		for i, c := range clients {
+			if c.Conn == conn {
+				clients = append(clients[:i], clients[i+1:]...)
+				break
+			}
+		}
+	}()
 
 	// Loop to read incoming messages
 	for {
@@ -66,6 +76,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(msgWithID)
 	}
 }
+
 func main() {
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/ws", wsHandler)
