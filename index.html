@@ -1,35 +1,36 @@
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
-	<meta charset="UTF-8">
-	<title>WebSocket chat</title>
+    <meta charset="UTF-8">
+    <title>WebSocket chat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<script>
-		var socket = new WebSocket("ws://localhost:8000/ws");
+    <script>
+        var socket = new WebSocket("ws://localhost:8000/ws");
 
-		socket.onmessage = function(event) {
-			var msg = event.data;
-			var messages = document.getElementById("messages");
-			var li = document.createElement("li");
-			li.appendChild(document.createTextNode(msg));
-			messages.appendChild(li);
-		};
+        socket.onmessage = function(event) {
+            var msg = event.data;
+            var messages = document.getElementById("messages");
+            var li = document.createElement("li");
+            li.appendChild(document.createTextNode(msg));
+            messages.appendChild(li);
+        };
 
-		function sendMessage(event) {
-  if (event.keyCode === 13) {
-    var input = document.getElementById("input");
-    socket.send(input.value);
-    input.value = "";
-  }
-}
+        function sendMessage(event) {
+            if (event && event.keyCode !== 13) {
+                return;
+            }
 
-	</script>
+            var input = document.getElementById("input");
+            socket.send(input.value);
+            input.value = "";
+        }
+    </script>
 </head>
 <body>
-	<h1>WebSocket chat</h1>
-	<ul id="messages"></ul>
-    <label for="input">Message:</label>
-	<input type="text" id="input" onkeydown="sendMessage(event)">
-	<button onclick="sendMessage()">Send</button>
+    <h1 style="color: #0081af;">WebSocket chat</h1>
+    <ul style="color: #00abe7;" id="messages"></ul>
+    <label style="color: #2dc7ff;" for="input">Message:</label>
+    <input style="border-color: #ead2ac; border-radius: 20px;" type="text" id="input" onkeydown="sendMessage(event)">
+    <button style="color: #0081af; background-color: #2dc7ff; border: none; border-radius: 20px;" onclick="sendMessage()"> --> </button>
 </body>
 </html>
