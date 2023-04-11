@@ -15,18 +15,21 @@
 			messages.appendChild(li);
 		};
 
-		function sendMessage() {
-			var input = document.getElementById("input");
-			socket.send(input.value);
-			input.value = "";
-		}
+		function sendMessage(event) {
+  if (event.keyCode === 13) {
+    var input = document.getElementById("input");
+    socket.send(input.value);
+    input.value = "";
+  }
+}
+
 	</script>
 </head>
 <body>
 	<h1>WebSocket chat</h1>
 	<ul id="messages"></ul>
     <label for="input">Message:</label>
-	<input type="text" id="input" name="input" placeholder="Enter your message here">
+	<input type="text" id="input" onkeydown="sendMessage(event)">
 	<button onclick="sendMessage()">Send</button>
 </body>
 </html>
