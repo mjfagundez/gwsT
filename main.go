@@ -16,7 +16,7 @@ type Client struct {
 	Conn *websocket.Conn
 }
 
-var clients []*Client
+var clientsMap = make(map[int]*Client)
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "index.html")
@@ -31,21 +31,21 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Assign an ID to the client
-	clientID := len(clients) + 1
+	clientID := len(clientsMap) + 1
 
 	// Add the new client to the list of clients
 	client := &Client{ID: clientID, Conn: conn}
-	clients = append(clients, client)
+	clientsMap[client.ID] = client
 
 	// Send a welcome message to the client with their ID
 	welcomeMsg := fmt.Sprintf("Welcome, client #%d!", clientID)
 	conn.WriteMessage(websocket.TextMessage, []byte(welcomeMsg))
 
-	// Remove the client's connection from the clients slice when they disconnect
+	// Remove the client's connection from the clients map when they disconnect
 	defer func() {
-		for i, c := range clients {
+		for id, c := range clientsMap {
 			if c.Conn == conn {
-				clients = append(clients[:i], clients[i+1:]...)
+				delete(clientsMap, id)
 				break
 			}
 		}
@@ -64,7 +64,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		msgWithID := fmt.Sprintf("Client #%d: %s", clientID, string(msg))
 
 		// Broadcast the message to all connected clients
-		for _, c := range clients {
+		for _, c := range clientsMap {
 			err = c.Conn.WriteMessage(websocket.TextMessage, []byte(msgWithID))
 			if err != nil {
 				log.Println(err)
